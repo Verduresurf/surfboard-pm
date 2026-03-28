@@ -928,3 +928,4 @@ h3 { font-size: 1.2rem; }
   .orders-grid { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
 }
+.sidebar { z-index: 200 !important; } .mobile-header { z-index: 50 !important; }
