@@ -177,5 +177,3 @@ function OrderCard({ order, onClick }) {
     </div>
   )
 }
-  )
-}
