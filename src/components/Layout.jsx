@@ -40,42 +40,52 @@ export default function Layout() {
     navigate('/login')
   }
 
-  function handleNavClick() {
-    setMenuOpen(false)
-  }
-
   return (
-    <div className="app-shell">
-      {/* Mobile overlay */}
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+
+      {/* Dark overlay when menu open on mobile */}
       {menuOpen && (
         <div
           onClick={() => setMenuOpen(false)}
           style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            zIndex: 99,
+            background: 'rgba(0,0,0,0.7)',
+            zIndex: 300,
           }}
         />
       )}
 
       {/* Sidebar */}
-      <nav className="sidebar" style={{
-        transform: menuOpen ? 'translateX(0)' : undefined,
+      <nav style={{
+        width: 220,
+        minHeight: '100vh',
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        position: 'fixed',
+        top: 0, left: 0,
+        zIndex: 400,
+        transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.25s ease',
       }}>
-        <div className="sidebar-logo">
-          <div className="wordmark">SurfPM</div>
-          <div className="sub">Production System</div>
+        <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontFamily: 'var(--font-head)', fontSize: '1.3rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent-text)' }}>SurfPM</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>Production System</div>
         </div>
 
-        <div className="sidebar-nav">
+        <div style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
           {NAV.map(group => (
             <div key={group.section}>
-              <div className="nav-section-label">{group.section}</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-dim)', padding: '12px 20px 4px' }}>
+                {group.section}
+              </div>
               {group.items.map(item => (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  onClick={handleNavClick}
+                  onClick={() => setMenuOpen(false)}
                   className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
                 >
                   <item.icon className="icon" />
@@ -86,29 +96,53 @@ export default function Layout() {
           ))}
         </div>
 
-        <div className="sidebar-footer">
-          <div className="user-name">{profile?.full_name ?? 'User'}</div>
-          <div className="user-role">{profile?.role?.replace('_', ' ')}</div>
-          <button className="sign-out" onClick={handleSignOut}>Sign out</button>
+        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+          <div style={{ fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>{profile?.full_name ?? 'User'}</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-dim)' }}>{profile?.role}</div>
+          <button
+            onClick={handleSignOut}
+            style={{ marginTop: 10, background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--r)', color: 'var(--text-muted)', padding: '5px 10px', fontSize: '0.75rem', cursor: 'pointer' }}
+          >
+            Sign out
+          </button>
         </div>
       </nav>
 
       {/* Main content */}
-      <main className="page-content">
-        {/* Mobile header bar */}
-        <div className="mobile-header">
+      <div style={{ flex: 1, minHeight: '100vh', marginLeft: 0 }}>
+
+        {/* Mobile top bar — always visible */}
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          height: 52,
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 16px',
+          zIndex: 200,
+        }}>
           <button
-            className="hamburger"
             onClick={() => setMenuOpen(o => !o)}
-            aria-label="Menu"
+            style={{
+              background: 'none', border: 'none',
+              cursor: 'pointer', padding: 8,
+              display: 'flex', flexDirection: 'column',
+              gap: 5, alignItems: 'center', justifyContent: 'center',
+            }}
           >
-            <span /><span /><span />
+            <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text)', borderRadius: 2 }} />
+            <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text)', borderRadius: 2 }} />
+            <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text)', borderRadius: 2 }} />
           </button>
-          <div style={{ width: 36 }} />
         </div>
 
+        {/* Spacer so content doesn't hide under fixed bar */}
+        <div style={{ height: 52 }} />
+
         <Outlet />
-      </main>
+      </div>
     </div>
   )
 }
