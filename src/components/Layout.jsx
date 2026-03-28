@@ -104,9 +104,6 @@ export default function Layout() {
           >
             <span /><span /><span />
           </button>
-          <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--accent-text)', fontSize: '1.1rem' }}>
-            SurfPM
-          </div>
           <div style={{ width: 36 }} />
         </div>
 
