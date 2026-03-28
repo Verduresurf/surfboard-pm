@@ -5,25 +5,24 @@ import { fetchMyProfile } from '../lib/db'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(undefined) // undefined = loading
+  const [session, setSession] = useState(undefined)
   const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    // Load initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('[Auth] initial session', session?.user?.email ?? 'none')
       setSession(session)
       if (session?.user) loadProfile(session.user.id)
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         console.log('[Auth] state change →', _event)
+        if (_event === 'TOKEN_REFRESHED' && !session) return
         setSession(session)
         if (session?.user) {
           loadProfile(session.user.id)
-        } else {
+        } else if (_event === 'SIGNED_OUT') {
           setProfile(null)
         }
       }
@@ -43,14 +42,12 @@ export function AuthProvider({ children }) {
   }
 
   async function signIn(email, password) {
-    console.log('[Auth] signIn', email)
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     return data
   }
 
   async function signOut() {
-    console.log('[Auth] signOut')
     await supabase.auth.signOut()
   }
 
