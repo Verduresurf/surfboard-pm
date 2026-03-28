@@ -15,11 +15,19 @@ function evaluateFormula(formula, order) {
   const volume        = parseFloat(order.volume_l)      || 0
   const finMap        = { single: 1, twin: 2, thruster: 3, quad: 4, five: 5, '2+1': 3 }
   const finCount      = finMap[(order.fin_setup || '').toLowerCase()] || 3
+  // Normalise formula to lowercase variable names so LengthM, LengthFt etc all work
+  const normalised = formula
+    .replace(/LengthFt/g, 'lengthFt')
+    .replace(/LengthM/g,  'lengthM')
+    .replace(/WidthIn/g,  'widthIn')
+    .replace(/ThicknessIn/g, 'thicknessIn')
+    .replace(/Volume/g,   'volume')
+    .replace(/FinCount/g, 'finCount')
   try {
     // eslint-disable-next-line no-new-func
     return new Function(
       'lengthFt','lengthM','widthIn','thicknessIn','volume','finCount',
-      `"use strict"; return (${formula})`
+      `"use strict"; return (${normalised})`
     )(lengthFt, lengthM, widthIn, thicknessIn, volume, finCount)
   } catch(e) {
     console.error('[Formula] error:', e.message, formula)
