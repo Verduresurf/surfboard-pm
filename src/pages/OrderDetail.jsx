@@ -166,6 +166,7 @@ export default function OrderDetail() {
       </div>
 
       <div className="page-body">
+        {/* Staff selector */}
         {staff.length > 0 && (
           <div style={{ background: activeWorker ? 'var(--accent-pale)' : 'var(--surface2)', border: '1px solid', borderColor: activeWorker ? 'var(--accent-dim)' : 'var(--border)', borderRadius: 'var(--r)', padding: '10px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
             onClick={() => setShowStaff(!showStaff)}>
@@ -193,6 +194,7 @@ export default function OrderDetail() {
 
         <div className="detail-layout">
           <div>
+            {/* Progress */}
             <div className="card" style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>Production Progress</div>
@@ -204,6 +206,7 @@ export default function OrderDetail() {
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{doneTasks} of {tasks.length} steps complete</div>
             </div>
 
+            {/* Tasks */}
             <div className="card" style={{ marginBottom: 16, padding: 0, overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>Production Tasks</div>
@@ -240,6 +243,7 @@ export default function OrderDetail() {
               }
             </div>
 
+            {/* Photos & Files */}
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>Photos & Files</div>
@@ -262,6 +266,7 @@ export default function OrderDetail() {
             </div>
           </div>
 
+          {/* Sidebar */}
           <div className="detail-sidebar">
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -287,4 +292,212 @@ export default function OrderDetail() {
                 {order.fin_setup  && <SpecRow label="Fin setup"  value={order.fin_setup} />}
                 {order.fin_system && <SpecRow label="Fin system" value={order.fin_system} />}
                 {order.tail_shape && <SpecRow label="Tail"       value={order.tail_shape} />}
-                {order.sale_price && <SpecRow label="Sale price" value={`$${parseFloat(order.
+                {order.sale_price && <SpecRow label="Sale price" value={`$${parseFloat(order.sale_price).toFixed(2)}`} accent />}
+              </div>
+            </div>
+
+            <div className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>Customer</div>
+                {isManager && <button className="btn btn-ghost btn-sm" onClick={() => setEditModal('customer')}>Edit</button>}
+              </div>
+              {order.customer_email   && <SpecRow label="Email"   value={order.customer_email} />}
+              {order.customer_phone   && <SpecRow label="Phone"   value={order.customer_phone} />}
+              {order.shipping_address && <SpecRow label="Ship to" value={order.shipping_address} />}
+              {!order.customer_email && !order.customer_phone && !order.shipping_address && (
+                <div style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No customer details — click Edit to add</div>
+              )}
+            </div>
+
+            <div className="card">
+              <div style={{ fontFamily: 'var(--font-head)', fontWeight: 600, marginBottom: 10 }}>Customer Tracking</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', wordBreak: 'break-all', fontFamily: 'var(--font-mono)', marginBottom: 10 }}>{trackingUrl}</div>
+              <button className="btn btn-secondary btn-sm w-full" onClick={() => navigator.clipboard.writeText(trackingUrl).then(() => alert('Link copied!'))}>Copy Link</button>
+            </div>
+
+            {order.notes && (
+              <div className="card">
+                <div style={{ fontFamily: 'var(--font-head)', fontWeight: 600, marginBottom: 8 }}>Notes</div>
+                <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', whiteSpace: 'pre-wrap' }}>{order.notes}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {taskModal && <CompleteTaskModal task={taskModal} trackTime={settings.track_task_time === 'true'} onConfirm={handleCompleteTask} onClose={() => setTaskModal(null)} />}
+      {liquidModal && <LiquidUsageModal liquids={liquidModal.liquids} onConfirm={handleLiquidLog} onClose={() => setLiquidModal(null)} />}
+      {editModal === 'specs'    && <EditSpecsModal    order={order} onSave={handleSaveSpecs} onClose={() => setEditModal(null)} />}
+      {editModal === 'customer' && <EditCustomerModal order={order} onSave={handleSaveSpecs} onClose={() => setEditModal(null)} />}
+    </>
+  )
+}
+
+function SpecBox({ label, value, wide }) {
+  return (
+    <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '8px 10px', textAlign: 'center', gridColumn: wide ? '1 / -1' : undefined }}>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1rem' }}>{value}</div>
+    </div>
+  )
+}
+
+function SpecRow({ label, value, accent }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-dim)', paddingTop: 1 }}>{label}</div>
+      <div style={{ fontWeight: 500, fontSize: '0.88rem', textAlign: 'right', color: accent ? 'var(--accent-text)' : 'var(--text)', maxWidth: '60%', wordBreak: 'break-word' }}>{value}</div>
+    </div>
+  )
+}
+
+function CompleteTaskModal({ task, trackTime, onConfirm, onClose }) {
+  const [minutes, setMinutes] = useState('')
+  const [notes, setNotes]     = useState('')
+  const [loading, setLoading] = useState(false)
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-header">
+          <div className="modal-title">Complete: {task.task_definition?.name ?? task.name}</div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <form onSubmit={async e => { e.preventDefault(); setLoading(true); await onConfirm({ minutes, notes }); setLoading(false) }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {trackTime && (
+              <div className="form-group">
+                <label className="form-label">Time taken (minutes)</label>
+                <input className="form-input" type="number" min="1" value={minutes} onChange={e => setMinutes(e.target.value)} placeholder="e.g. 45" autoFocus />
+              </div>
+            )}
+            <div className="form-group">
+              <label className="form-label">Notes (optional)</label>
+              <textarea className="form-textarea" value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
+            </div>
+            {task.task_definition?.requires_photo && (
+              <div style={{ background: 'var(--accent-pale)', border: '1px solid rgba(245,147,22,0.3)', borderRadius: 'var(--r)', padding: '10px 14px', color: 'var(--accent-text)', fontSize: '0.85rem' }}>
+                ⚠ Remember to upload a photo for this task
+              </div>
+            )}
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving…' : 'Mark Complete'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function LiquidUsageModal({ liquids, onConfirm, onClose }) {
+  const [entries, setEntries] = useState({})
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-header"><div className="modal-title">Log liquid usage</div><button className="modal-close" onClick={onClose}>✕</button></div>
+        <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Enter actual amounts used. Leave blank to skip.</div>
+          {liquids.map(l => (
+            <div key={l.materialId} className="form-group">
+              <label className="form-label">{l.materialName} <span className="muted">({l.unit}) — est: {l.qty}</span></label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input className="form-input" type="number" step="0.001" placeholder={`${l.qty}`} value={entries[l.materialId] ?? ''} onChange={e => setEntries(p => ({ ...p, [l.materialId]: e.target.value }))} />
+                <span className="muted" style={{ fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>{l.unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>Skip</button>
+          <button className="btn btn-primary" onClick={() => onConfirm(entries)}>Save Usage</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EditSpecsModal({ order, onSave, onClose }) {
+  const [form, setForm] = useState({
+    shaper: order.shaper ?? '', shape_name: order.shape_name ?? '',
+    length_ft: order.length_ft ?? '', width_in: order.width_in ?? '',
+    thickness_in: order.thickness_in ?? '', volume_l: order.volume_l ?? '',
+    colour: order.colour ?? '', fin_setup: order.fin_setup ?? '',
+    fin_system: order.fin_system ?? '', tail_shape: order.tail_shape ?? '',
+    sale_price: order.sale_price ?? '', notes: order.notes ?? '',
+  })
+  const [loading, setLoading] = useState(false)
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 560 }}>
+        <div className="modal-header"><div className="modal-title">Edit Board Specs</div><button className="modal-close" onClick={onClose}>✕</button></div>
+        <form onSubmit={async e => {
+          e.preventDefault(); setLoading(true)
+          await onSave({ ...form, length_ft: form.length_ft ? parseFloat(form.length_ft) : null, width_in: form.width_in ? parseFloat(form.width_in) : null, thickness_in: form.thickness_in ? parseFloat(form.thickness_in) : null, volume_l: form.volume_l ? parseFloat(form.volume_l) : null, sale_price: form.sale_price ? parseFloat(form.sale_price) : null })
+          setLoading(false)
+        }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="form-row form-row-2">
+              <div className="form-group"><label className="form-label">Shaper</label><input className="form-input" value={form.shaper} onChange={e => setForm(f => ({ ...f, shaper: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">Shape name</label><input className="form-input" value={form.shape_name} onChange={e => setForm(f => ({ ...f, shape_name: e.target.value }))} /></div>
+            </div>
+            <div className="form-row form-row-3">
+              <div className="form-group"><label className="form-label">Length (ft)</label><input className="form-input" type="number" step="0.01" value={form.length_ft} onChange={e => setForm(f => ({ ...f, length_ft: e.target.value }))} placeholder="6.17" /></div>
+              <div className="form-group"><label className="form-label">Width (in)</label><input className="form-input" type="number" step="0.0625" value={form.width_in} onChange={e => setForm(f => ({ ...f, width_in: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">Thickness (in)</label><input className="form-input" type="number" step="0.0625" value={form.thickness_in} onChange={e => setForm(f => ({ ...f, thickness_in: e.target.value }))} /></div>
+            </div>
+            <div className="form-row form-row-2">
+              <div className="form-group"><label className="form-label">Volume (L)</label><input className="form-input" type="number" step="0.01" value={form.volume_l} onChange={e => setForm(f => ({ ...f, volume_l: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">Colour</label><input className="form-input" value={form.colour} onChange={e => setForm(f => ({ ...f, colour: e.target.value }))} /></div>
+            </div>
+            <div className="form-row form-row-2">
+              <div className="form-group"><label className="form-label">Fin setup</label>
+                <select className="form-select" value={form.fin_setup} onChange={e => setForm(f => ({ ...f, fin_setup: e.target.value }))}><option value="">—</option>{FIN_SETUPS.map(v => <option key={v} value={v}>{v}</option>)}</select>
+              </div>
+              <div className="form-group"><label className="form-label">Fin system</label>
+                <select className="form-select" value={form.fin_system} onChange={e => setForm(f => ({ ...f, fin_system: e.target.value }))}><option value="">—</option>{FIN_SYSTEMS.map(v => <option key={v} value={v}>{v}</option>)}</select>
+              </div>
+            </div>
+            <div className="form-row form-row-2">
+              <div className="form-group"><label className="form-label">Tail shape</label>
+                <select className="form-select" value={form.tail_shape} onChange={e => setForm(f => ({ ...f, tail_shape: e.target.value }))}><option value="">—</option>{TAIL_SHAPES.map(v => <option key={v} value={v}>{v}</option>)}</select>
+              </div>
+              <div className="form-group"><label className="form-label">Sale price ($)</label><input className="form-input" type="number" step="0.01" value={form.sale_price} onChange={e => setForm(f => ({ ...f, sale_price: e.target.value }))} /></div>
+            </div>
+            <div className="form-group"><label className="form-label">Notes</label><textarea className="form-textarea" rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving…' : 'Save Changes'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function EditCustomerModal({ order, onSave, onClose }) {
+  const [form, setForm] = useState({ customer_name: order.customer_name ?? '', customer_email: order.customer_email ?? '', customer_phone: order.customer_phone ?? '', shipping_address: order.shipping_address ?? '' })
+  const [loading, setLoading] = useState(false)
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-header"><div className="modal-title">Edit Customer</div><button className="modal-close" onClick={onClose}>✕</button></div>
+        <form onSubmit={async e => { e.preventDefault(); setLoading(true); await onSave(form); setLoading(false) }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="form-group"><label className="form-label">Name</label><input className="form-input" value={form.customer_name} autoFocus onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))} /></div>
+            <div className="form-row form-row-2">
+              <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={form.customer_email} onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">Phone</label><input className="form-input" value={form.customer_phone} onChange={e => setForm(f => ({ ...f, customer_phone: e.target.value }))} /></div>
+            </div>
+            <div className="form-group"><label className="form-label">Shipping address</label><textarea className="form-textarea" rows={2} value={form.shipping_address} onChange={e => setForm(f => ({ ...f, shipping_address: e.target.value }))} /></div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving…' : 'Save Changes'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
